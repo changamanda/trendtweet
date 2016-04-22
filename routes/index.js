@@ -10,7 +10,9 @@ var twitter = new twitterAPI({
 });
 
 router.get('/', function(req, res, next) {
-  console.log(req.session);
+  if (!req.session.accessToken){
+    res.redirect('/login');
+  }
   res.render('index', { title: 'Express' });
 });
 

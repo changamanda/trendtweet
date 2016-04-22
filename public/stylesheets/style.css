@@ -3,6 +3,59 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+h1{
+  font-weight: 900;
+  color: #4457AA;
+}
+
 a {
   color: #00B7FF;
+}
+
+.col-md-4{
+  padding: .5%;
+}
+
+.btn {
+  width: 100%;
+}
+
+i:hover{
+  color: #008CBA;
+}
+
+#custom-col{
+  height: 100%;
+}
+
+.custom-trend-box{
+  background-color: #696969;
+  height: 100%;
+  padding: 9px 12px;
+  text-align: center;
+}
+
+.custom-trend{
+  border: 0;
+}
+
+input{
+  background-color: transparent;
+  padding: 2px;
+  color: white;
+  width: 80%;
+  text-align: center;
+}
+
+input:focus {
+    outline:none;
+}
+
+.fa-check-circle-o{
+  color: white;
+}
+
+#login-container{
+  margin-top: 25%;
+  text-align: center;
 }

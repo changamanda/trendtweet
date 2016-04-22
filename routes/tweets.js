@@ -16,10 +16,30 @@ router.get('/trends', function(req, res, next) {
     if (error) {
       console.log(error);
     } else {
-      var trends = shuffle(data[0].trends).slice(0, 6);
+      var trends = shuffle(data[0].trends).slice(0, 5);
       res.json(trends);
     }
   });
 });
+
+router.get('/:query', function(req, res, next){
+  twitter.search({ q: req.params.query, count: 10, result_type: "popular" }, req.session.accessToken, req.session.accessTokenSecret, function(error, data, response) {
+    if (error) {
+      console.log(error);
+    } else {
+      res.json(data.statuses);
+    }
+  });
+});
+
+router.post('/retweet/:id', function(req, res, next){
+  twitter.statuses("retweet", { id: req.params.id.toString() }, req.session.accessToken, req.session.accessTokenSecret, function(error, data, response) {
+    if (error) {
+      console.log(error);
+    } else {
+      res.json(data);
+    }
+  });
+})
 
 module.exports = router;

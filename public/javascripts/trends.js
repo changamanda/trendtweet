@@ -19138,22 +19138,47 @@ var ReactDOM = require('react-dom');
 
 var TweetBox = React.createClass({displayName: "TweetBox",
   getInitialState: function(){
-    return { title: "Hello!" }
+    return { title: "", tweets: [] }
   },
-  handleTrendClickFromBox: function(title){
-    this.setState({title: title});
+  handleTrendClickFromBox: function(title, tweets){
+    var updated = [];
+    tweets.length === 0 ? updated = ["Couldn't find any Tweets!"] : updated = tweets
+    this.setState({title: `Retweet about ${title}`, tweets: updated});
   },
   render: function(){
+    var tweetsElements = this.state.tweets.map(function(tweet){
+      if (tweet === "Couldn't find any Tweets!"){
+        debugger
+        return (React.createElement("h3", null,  tweet ))
+      }
+      return React.createElement(Tweet, {user:  tweet.user.name, id:  tweet.id_str},  tweet.text)
+    })
+
     return (React.createElement("div", null, 
+      React.createElement("h1", null, "Trend Tweet"), 
       React.createElement(TrendsList, {handleTrendClickFromBox:  this.handleTrendClickFromBox}), 
-      React.createElement(TrendTitle, {title:  this.state.title})
+      React.createElement("h2", null,  this.state.title), 
+       tweetsElements 
     ));
   }
 })
 
-var TrendTitle = React.createClass({displayName: "TrendTitle",
+var Tweet = React.createClass({displayName: "Tweet",
+  retweet: function(){
+    var self = this;
+    $.ajax({
+      method: "POST",
+      url: "/tweets/retweet/" + this.props.id,
+    })
+      .done(function(response) {
+        console.log(response);
+      });
+  },
   render: function(){
-    return React.createElement("h1", null,  this.props.title)
+    return (React.createElement("div", null, 
+        React.createElement("p", null,  this.props.children, " (", this.props.user, ") ", React.createElement("i", {onClick:  this.retweet, className: "fa fa-retweet", "aria-hidden": "true"}))
+      )
+    )
   }
 })
 
@@ -19162,6 +19187,9 @@ var TrendsList = React.createClass({displayName: "TrendsList",
     return {trends: []}
   },
   componentDidMount: function(){
+    this.loadTrends();
+  },
+  loadTrends: function(){
     var self = this;
     $.ajax({
       method: "GET",
@@ -19175,25 +19203,84 @@ var TrendsList = React.createClass({displayName: "TrendsList",
   render: function() {
     var self = this;
     var trendsTags = this.state.trends.map(function(trend){
-      return React.createElement(Trend, {handleTrendClick:  self.props.handleTrendClickFromBox, key:  trend.name},  trend.name);
+      return React.createElement(Trend, {handleTrendClick:  self.props.handleTrendClickFromBox, key:  trend.name, query:  trend.query},  trend.name);
     });
     return (
       React.createElement("div", null, 
-         trendsTags 
+        React.createElement("h4", null, "Click to explore a trend! ", React.createElement("i", {onClick:  this.loadTrends, className: "fa fa-refresh", "aria-hidden": "true"})), 
+        React.createElement("div", {className: "row"}, 
+           trendsTags, 
+          React.createElement(CustomTrend, {handleTrendClick:  self.props.handleTrendClickFromBox})
+        )
       )
     )
   }
 })
 
 var Trend = React.createClass({displayName: "Trend",
-  handleClick: function(){
-    this.props.handleTrendClick(this.props.children);
+  getInitialState: function(){
+    return {tweets: []};
+  },
+  getTweets: function(){
+    var self = this;
+    $.ajax({
+      method: "GET",
+      url: "/tweets/" + this.props.query,
+    })
+      .done(function(response) {
+        console.log(response);
+        self.setState({tweets: response}, function(){
+          self.props.handleTrendClick(self.props.children, self.state.tweets);
+        });
+      });
   },
   render: function() {
-    return React.createElement("a", {href: "#", className: "btn btn-primary", onClick:  this.handleClick},  this.props.children)
+    return (
+      React.createElement("div", {className: "col-md-4"}, 
+        React.createElement("a", {href: "#", className: "btn btn-primary", onClick:  this.getTweets},  this.props.children)
+      )
+    )
   }
 });
 
-ReactDOM.render(React.createElement(TweetBox, null), document.getElementById('trends'));
+var CustomTrend = React.createClass({displayName: "CustomTrend",
+  getInitialState: function(){
+    return {tweets: [], title: ""};
+  },
+  editTitle: function(e){
+    this.setState({title: e.target.value});
+  },
+  getTweets: function(){
+    var self = this;
+    $.ajax({
+      method: "GET",
+      url: "/tweets/" + escape(this.state.title),
+    })
+      .done(function(response) {
+        self.setState({tweets: response}, function(){
+          self.props.handleTrendClick(self.state.title, self.state.tweets);
+        });
+      });
+  },
+  _onKeyPress: function(e){
+    if (e.key === 'Enter') {
+      this.getTweets();
+    }
+  },
+  render: function() {
+    return (
+      React.createElement("div", {className: "col-md-4", id: "custom-col"}, 
+        React.createElement("div", {className: "custom-trend-box"}, 
+          React.createElement("input", {className: "custom-trend", onChange:  this.editTitle, onEnter:  this.getTweets, onKeyPress:  this._onKeyPress, type: "text", placeholder: "Choose a Trend!"}), 
+          React.createElement("i", {className: "fa fa-check-circle-o", onClick:  this.getTweets, "aria-hidden": "true"})
+        )
+      )
+    )
+  }
+});
+
+$(document).ready(function(){
+  ReactDOM.render(React.createElement(TweetBox, null), document.getElementById('trends'));
+});
 
 },{"react":164,"react-dom":1}]},{},[165]);
