@@ -6,7 +6,7 @@ var twitterAPI = require('node-twitter-api');
 var twitter = new twitterAPI({
   consumerKey: process.env.TREND_TWEET_CONSUMER_KEY,
   consumerSecret: process.env.TREND_TWEET_CONSUMER_SECRET,
-  callback: 'http://127.0.0.1:3000/callback'
+  callback: 'http://trend-tweet.herokuapp.com/callback'
 });
 
 router.get('/', function(req, res, next) {

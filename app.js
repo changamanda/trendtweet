@@ -25,7 +25,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // session setup
 app.use(session({
-  secret: 'keyboard cat'
+  secret: process.env.COOKIE_SECRET,
+  saveUninitialized: true,
+  resave: false,
+  cookie: { maxAge: 60000 }
 }));
 
 app.use('/', routes);
